@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gesture Particle Light Field</title>
+    <title>Full Body Particle Light Stage</title>
     <meta
       name="description"
-      content="A camera-driven gesture particle light field that reacts to eight single-hand gestures with distinct particle colors and forms."
+      content="A camera-driven full-body particle light stage that reacts to arms, hands, torso, legs, jumps, and dance energy."
     />
     <link
       rel="icon"
@@ -15,13 +15,13 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <canvas id="particle-canvas" aria-label="手势驱动粒子光场"></canvas>
+    <canvas id="particle-canvas" aria-label="全身动作驱动粒子光场"></canvas>
 
     <main class="stage-shell">
       <header class="topbar">
         <div class="brand-block">
-          <span class="eyebrow">GESTURE FIELD</span>
-          <h1>手势粒子光场</h1>
+          <span class="eyebrow">BODY LIGHT STAGE</span>
+          <h1>全身动作粒子光场</h1>
         </div>
         <div class="signal-readout" aria-live="polite">
           <span class="signal-dot" id="signal-dot"></span>
@@ -34,55 +34,51 @@
           <span class="mode-label">当前状态</span>
           <strong id="gesture-name">等待</strong>
         </div>
-        <p id="gesture-copy">点击启动摄像头，或直接移动鼠标预览粒子收缩状态。</p>
+        <p id="gesture-copy">点击启动摄像头，或直接移动鼠标预览全身动作光效。</p>
         <div class="meter" aria-label="识别置信度">
           <span id="confidence-meter"></span>
         </div>
       </section>
 
-      <aside class="gesture-strip" aria-label="手势映射">
-        <button class="gesture-chip active" data-demo="open" type="button">
-          <span>张开</span>
-          <small>外扩</small>
+      <aside class="gesture-strip" aria-label="动作映射">
+        <button class="gesture-chip active" data-demo="hands-up" type="button">
+          <span>举手</span>
+          <small>光柱</small>
         </button>
-        <button class="gesture-chip" data-demo="fist" type="button">
-          <span>握拳</span>
-          <small>收缩</small>
+        <button class="gesture-chip" data-demo="clap" type="button">
+          <span>拍手</span>
+          <small>爆核</small>
         </button>
-        <button class="gesture-chip" data-demo="pinch" type="button">
-          <span>捏合</span>
-          <small>光核</small>
+        <button class="gesture-chip" data-demo="wave" type="button">
+          <span>挥臂</span>
+          <small>光带</small>
         </button>
-        <button class="gesture-chip" data-demo="point" type="button">
-          <span>指向</span>
-          <small>光束</small>
+        <button class="gesture-chip" data-demo="leg-kick" type="button">
+          <span>抬腿</span>
+          <small>刀光</small>
         </button>
-        <button class="gesture-chip" data-demo="sweep" type="button">
-          <span>挥动</span>
-          <small>潮汐</small>
+        <button class="gesture-chip" data-demo="jump" type="button">
+          <span>跳跃</span>
+          <small>地环</small>
         </button>
-        <button class="gesture-chip" data-demo="victory" type="button">
-          <span>V形</span>
-          <small>双螺旋</small>
+        <button class="gesture-chip" data-demo="twist" type="button">
+          <span>转身</span>
+          <small>旋涡</small>
         </button>
-        <button class="gesture-chip" data-demo="three" type="button">
-          <span>三指</span>
-          <small>放射</small>
-        </button>
-        <button class="gesture-chip" data-demo="rock" type="button">
-          <span>摇滚</span>
-          <small>闪电</small>
+        <button class="gesture-chip" data-demo="dance" type="button">
+          <span>跳舞</span>
+          <small>高能</small>
         </button>
       </aside>
 
       <section class="control-dock" aria-label="控制区">
         <button id="start-camera" class="primary-action" type="button">
-          启动摄像头
+          启动全身识别
         </button>
         <button id="toggle-video" class="ghost-action" type="button" aria-pressed="false">
           显示画面
         </button>
-        <span class="dock-note" id="dock-note">允许浏览器摄像头权限后，手放进画面中央。</span>
+        <span class="dock-note" id="dock-note">允许浏览器摄像头权限后，让头、双手、躯干和腿进入画面。</span>
       </section>
 
       <div class="video-monitor" id="video-monitor" aria-hidden="true">
@@ -90,9 +86,6 @@
         <canvas id="hand-overlay"></canvas>
       </div>
     </main>
-
-    <script src="%BASE_URL%mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="%BASE_URL%mediapipe/hands/hands.js"></script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -252,54 +252,50 @@ h1 {
   transform: translateY(-2px);
 }
 
-.gesture-chip[data-demo="open"].active {
+.gesture-chip[data-demo="hands-up"].active {
   border-color: rgba(255, 219, 113, 0.78);
   background: rgba(255, 199, 72, 0.12);
   box-shadow: 0 0 18px rgba(255, 198, 77, 0.34);
 }
 
-.gesture-chip[data-demo="fist"].active {
+.gesture-chip[data-demo="clap"].active {
+  border-color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 65, 229, 0.12);
+  box-shadow:
+    0 0 18px rgba(255, 65, 229, 0.34),
+    0 0 22px rgba(255, 224, 86, 0.18);
+}
+
+.gesture-chip[data-demo="wave"].active {
   border-color: rgba(68, 255, 244, 0.78);
   background: rgba(68, 255, 244, 0.1);
   box-shadow: 0 0 18px rgba(68, 255, 244, 0.32);
 }
 
-.gesture-chip[data-demo="pinch"].active {
-  border-color: rgba(255, 65, 229, 0.78);
-  background: rgba(255, 65, 229, 0.12);
-  box-shadow: 0 0 18px rgba(255, 65, 229, 0.34);
+.gesture-chip[data-demo="leg-kick"].active {
+  border-color: rgba(157, 255, 94, 0.82);
+  background: rgba(157, 255, 94, 0.11);
+  box-shadow: 0 0 18px rgba(157, 255, 94, 0.3);
 }
 
-.gesture-chip[data-demo="point"].active {
-  border-color: rgba(255, 79, 160, 0.78);
-  background: rgba(255, 79, 160, 0.11);
-  box-shadow: 0 0 18px rgba(255, 79, 160, 0.32);
+.gesture-chip[data-demo="jump"].active {
+  border-color: rgba(255, 154, 63, 0.82);
+  background: rgba(255, 154, 63, 0.12);
+  box-shadow: 0 0 18px rgba(255, 154, 63, 0.32);
 }
 
-.gesture-chip[data-demo="sweep"].active {
-  border-color: rgba(88, 130, 255, 0.78);
-  background: rgba(88, 130, 255, 0.11);
-  box-shadow: 0 0 18px rgba(88, 130, 255, 0.32);
+.gesture-chip[data-demo="twist"].active {
+  border-color: rgba(175, 100, 255, 0.82);
+  background: rgba(175, 100, 255, 0.12);
+  box-shadow: 0 0 18px rgba(175, 100, 255, 0.32);
 }
 
-.gesture-chip[data-demo="victory"].active {
-  border-color: rgba(79, 203, 255, 0.82);
-  background: rgba(79, 203, 255, 0.11);
-  box-shadow: 0 0 18px rgba(79, 203, 255, 0.32);
-}
-
-.gesture-chip[data-demo="three"].active {
-  border-color: rgba(255, 244, 160, 0.84);
-  background: rgba(255, 224, 86, 0.13);
-  box-shadow: 0 0 18px rgba(255, 224, 86, 0.34);
-}
-
-.gesture-chip[data-demo="rock"].active {
-  border-color: rgba(255, 65, 92, 0.82);
-  background: rgba(255, 65, 92, 0.12);
+.gesture-chip[data-demo="dance"].active {
+  border-color: rgba(255, 65, 146, 0.82);
+  background: rgba(255, 65, 146, 0.12);
   box-shadow:
-    0 0 16px rgba(255, 65, 92, 0.3),
-    0 0 22px rgba(70, 130, 255, 0.18);
+    0 0 16px rgba(255, 65, 146, 0.32),
+    0 0 22px rgba(68, 255, 244, 0.18);
 }
 
 .control-dock {
