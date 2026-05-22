@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.playwright-cli/
+output/
+reference-video-frames/
+verification*.png
+src/styles 2.css
+.DS_Store
+*.log
