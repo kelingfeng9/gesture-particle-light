@@ -33,5 +33,5 @@ npm run build
 
 - Vite
 - Canvas 2D 粒子渲染
-- MediaPipe Hands
+- MediaPipe Hands 静态运行资源
 - Node test runner

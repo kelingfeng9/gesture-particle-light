@@ -1,5 +1,3 @@
-import "@mediapipe/camera_utils";
-import "@mediapipe/hands";
 import { classifyGesture, getGestureConfig, smoothGestureState } from "./gesture.js";
 
 const MediaPipeHands = window.Hands;
