@@ -169,6 +169,164 @@ const GESTURE_CONFIGS = {
     turbulence: 1,
     hue: 352,
     secondaryHue: 222
+  },
+  ok: {
+    copy: "OK：绿金光环层层弹开",
+    palette: "lime-ring",
+    particleStyle: "rings",
+    mode: "ok-rings",
+    contraction: 0.34,
+    spread: 0.62,
+    vortex: 0.56,
+    crescent: 0.06,
+    tail: 0.16,
+    rings: 1,
+    starfield: 0.34,
+    coreIntensity: 0.62,
+    turbulence: 0.18,
+    hue: 92,
+    secondaryHue: 48
+  },
+  thumb: {
+    copy: "点赞：青白光柱向上拉升",
+    palette: "aqua-pillar",
+    particleStyle: "pillar",
+    mode: "thumb-pillar",
+    contraction: 0.3,
+    spread: 0.5,
+    vortex: 0.34,
+    crescent: 0.08,
+    tail: 0.28,
+    pillar: 1,
+    starfield: 0.24,
+    coreIntensity: 0.68,
+    turbulence: 0.16,
+    hue: 186,
+    secondaryHue: 62
+  },
+  call: {
+    copy: "电话：橙蓝信号波向外扩散",
+    palette: "radio-signal",
+    particleStyle: "signal",
+    mode: "signal-wave",
+    contraction: 0.36,
+    spread: 0.66,
+    vortex: 0.64,
+    crescent: 0.08,
+    tail: 0.46,
+    signal: 1,
+    starfield: 0.32,
+    coreIntensity: 0.52,
+    turbulence: 0.36,
+    hue: 24,
+    secondaryHue: 206
+  },
+  "l-shape": {
+    copy: "L形：直角光束切开暗场",
+    palette: "laser-corner",
+    particleStyle: "corner",
+    mode: "corner-beam",
+    contraction: 0.42,
+    spread: 0.5,
+    vortex: 0.24,
+    crescent: 0.34,
+    tail: 0.22,
+    cornerBeam: 1,
+    starfield: 0.16,
+    coreIntensity: 0.48,
+    turbulence: 0.07,
+    hue: 332,
+    secondaryHue: 58
+  },
+  "double-open": {
+    copy: "双掌：两团星云同时外扩",
+    palette: "twin-nebula",
+    particleStyle: "dual-dust",
+    mode: "dual-expand",
+    contraction: 0.12,
+    spread: 1,
+    vortex: 0.68,
+    crescent: 0.08,
+    tail: 0.34,
+    dual: 1,
+    starfield: 1,
+    coreIntensity: 0.42,
+    turbulence: 0.58,
+    hue: 52,
+    secondaryHue: 196
+  },
+  "double-fist": {
+    copy: "双拳：双光核向中线压缩",
+    palette: "binary-core",
+    particleStyle: "dual-core",
+    mode: "dual-collapse",
+    contraction: 0.94,
+    spread: 0.08,
+    vortex: 1.12,
+    crescent: 0.04,
+    tail: 0.08,
+    dual: 1,
+    shockwave: 1,
+    starfield: 0.08,
+    coreIntensity: 1,
+    turbulence: 0.05,
+    hue: 176,
+    secondaryHue: 286
+  },
+  "double-pinch": {
+    copy: "双捏合：掌心之间生成能量球",
+    palette: "fusion-orb",
+    particleStyle: "bridge-orb",
+    mode: "fusion",
+    contraction: 0.56,
+    spread: 0.32,
+    vortex: 1.28,
+    crescent: 0.12,
+    tail: 0.18,
+    dual: 1,
+    bridge: 1,
+    starfield: 0.28,
+    coreIntensity: 0.96,
+    turbulence: 0.12,
+    hue: 284,
+    secondaryHue: 166
+  },
+  "double-victory": {
+    copy: "双V：镜像双螺旋光带",
+    palette: "mirror-electric",
+    particleStyle: "mirror-ribbon",
+    mode: "mirror-helix",
+    contraction: 0.3,
+    spread: 0.66,
+    vortex: 1.12,
+    crescent: 0.08,
+    tail: 0.38,
+    dual: 1,
+    ribbons: 1,
+    mirrors: 1,
+    starfield: 0.38,
+    coreIntensity: 0.58,
+    turbulence: 0.22,
+    hue: 208,
+    secondaryHue: 296
+  },
+  clap: {
+    copy: "合掌：中心冲击波瞬间爆开",
+    palette: "impact-white",
+    particleStyle: "shockwave",
+    mode: "impact",
+    contraction: 0.24,
+    spread: 0.9,
+    vortex: 0.82,
+    crescent: 0.18,
+    tail: 0.54,
+    dual: 1,
+    shockwave: 1.2,
+    starfield: 0.5,
+    coreIntensity: 0.92,
+    turbulence: 0.7,
+    hue: 8,
+    secondaryHue: 54
   }
 };
 
@@ -219,13 +377,26 @@ export function classifyGesture(landmarks) {
   const extendedCount = fingerStates.filter(Boolean).length;
   const avgTipToWrist = average(TIP_INDICES.map((index) => distance(landmarks[index], wrist))) / palmSize;
   const thumbAway = distance(landmarks[4], landmarks[9]) / palmSize > 0.44;
+  const thumbUp = landmarks[4].y < landmarks[5].y - palmSize * 0.35;
 
   let name = "idle";
   let confidence = 0.4;
 
   const [indexExtended, middleExtended, ringExtended, pinkyExtended] = fingerStates;
 
-  if (thumbIndexDistance < 0.28 && middleExtended) {
+  if (thumbIndexDistance < 0.22 && !indexExtended && middleExtended && ringExtended && pinkyExtended) {
+    name = "ok";
+    confidence = clamp(0.92 - thumbIndexDistance, 0.74, 0.96);
+  } else if (thumbUp && extendedCount === 0) {
+    name = "thumb";
+    confidence = 0.84;
+  } else if (thumbAway && !indexExtended && !middleExtended && !ringExtended && pinkyExtended) {
+    name = "call";
+    confidence = 0.82;
+  } else if (thumbAway && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+    name = "l-shape";
+    confidence = 0.82;
+  } else if (thumbIndexDistance < 0.28 && middleExtended) {
     name = "pinch";
     confidence = clamp(1 - thumbIndexDistance * 1.8, 0.65, 0.98);
   } else if (indexExtended && !middleExtended && !ringExtended && pinkyExtended) {
@@ -257,6 +428,7 @@ export function classifyGesture(landmarks) {
     center: palmCenter,
     pinchPoint: averagePoints([landmarks[4], landmarks[8]]),
     indexTip: landmarks[8],
+    landmarks,
     palmSize,
     extended: {
       index: fingerStates[0],
@@ -264,6 +436,71 @@ export function classifyGesture(landmarks) {
       ring: fingerStates[2],
       pinky: fingerStates[3]
     },
+    config
+  };
+}
+
+export function classifyHandScene(handLandmarks) {
+  if (!Array.isArray(handLandmarks) || handLandmarks.length === 0) {
+    return {
+      name: "idle",
+      mode: "idle",
+      confidence: 0,
+      config: getGestureConfig("idle")
+    };
+  }
+
+  const hands = handLandmarks
+    .filter((landmarks) => Array.isArray(landmarks) && landmarks.length >= 21)
+    .map((landmarks) => classifyGesture(landmarks))
+    .sort((a, b) => a.center.x - b.center.x);
+
+  if (hands.length < 2) {
+    return hands[0] ?? {
+      name: "idle",
+      mode: "idle",
+      confidence: 0,
+      config: getGestureConfig("idle")
+    };
+  }
+
+  const [left, right] = hands;
+  const palmDistance = distance(left.center, right.center) / Math.max((left.palmSize + right.palmSize) / 2, 0.001);
+  let name = "idle";
+  let confidence = average([left.confidence, right.confidence]);
+
+  if (left.name === "open" && right.name === "open" && palmDistance < 0.62) {
+    name = "clap";
+    confidence = clamp(0.9 - palmDistance * 0.2, 0.72, 0.96);
+  } else if (left.name === "open" && right.name === "open") {
+    name = "double-open";
+    confidence = clamp(confidence + 0.06, 0.72, 0.96);
+  } else if (left.name === "fist" && right.name === "fist") {
+    name = "double-fist";
+    confidence = clamp(confidence + 0.06, 0.72, 0.96);
+  } else if (left.name === "pinch" && right.name === "pinch") {
+    name = "double-pinch";
+    confidence = clamp(confidence + 0.06, 0.72, 0.96);
+  } else if (left.name === "victory" && right.name === "victory") {
+    name = "double-victory";
+    confidence = clamp(confidence + 0.06, 0.72, 0.96);
+  } else {
+    return right.confidence > left.confidence ? right : left;
+  }
+
+  const config = getGestureConfig(name);
+  const center = averagePoints([left.center, right.center]);
+
+  return {
+    name,
+    mode: config.mode,
+    confidence,
+    center,
+    pinchPoint: averagePoints([left.pinchPoint, right.pinchPoint]),
+    indexTip: averagePoints([left.indexTip, right.indexTip]),
+    palmSize: average([left.palmSize, right.palmSize]),
+    hands,
+    landmarks: left.landmarks,
     config
   };
 }

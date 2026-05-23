@@ -205,7 +205,9 @@ h1 {
   bottom: clamp(62px, 7vw, 86px);
   z-index: 4;
   display: flex;
-  gap: 5px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   opacity: 0.38;
   transition: opacity 180ms ease;
 }
@@ -215,12 +217,32 @@ h1 {
   opacity: 1;
 }
 
+.gesture-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.gesture-group-label {
+  min-width: 28px;
+  color: rgba(246, 238, 255, 0.36);
+  font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.gesture-group-dual .gesture-chip {
+  border-color: rgba(68, 255, 244, 0.16);
+}
+
 .gesture-chip {
   display: grid;
   place-items: center;
-  min-width: 36px;
+  min-width: 34px;
   min-height: 28px;
-  padding: 4px 6px;
+  padding: 4px 5px;
   border: 1px solid rgba(246, 238, 255, 0.1);
   border-radius: 999px;
   background: rgba(5, 4, 12, 0.42);
@@ -300,6 +322,72 @@ h1 {
   box-shadow:
     0 0 16px rgba(255, 65, 92, 0.3),
     0 0 22px rgba(70, 130, 255, 0.18);
+}
+
+.gesture-chip[data-demo="ok"].active {
+  border-color: rgba(151, 255, 83, 0.84);
+  background: rgba(151, 255, 83, 0.12);
+  box-shadow: 0 0 18px rgba(151, 255, 83, 0.3);
+}
+
+.gesture-chip[data-demo="thumb"].active {
+  border-color: rgba(122, 250, 255, 0.84);
+  background: rgba(122, 250, 255, 0.11);
+  box-shadow: 0 0 18px rgba(122, 250, 255, 0.32);
+}
+
+.gesture-chip[data-demo="call"].active {
+  border-color: rgba(255, 156, 70, 0.84);
+  background: rgba(255, 156, 70, 0.12);
+  box-shadow:
+    0 0 16px rgba(255, 156, 70, 0.28),
+    0 0 22px rgba(70, 160, 255, 0.18);
+}
+
+.gesture-chip[data-demo="l-shape"].active {
+  border-color: rgba(255, 72, 184, 0.84);
+  background: rgba(255, 72, 184, 0.12);
+  box-shadow: 0 0 18px rgba(255, 72, 184, 0.3);
+}
+
+.gesture-chip[data-demo="double-open"].active {
+  border-color: rgba(255, 232, 111, 0.84);
+  background: rgba(255, 232, 111, 0.12);
+  box-shadow:
+    0 0 18px rgba(255, 232, 111, 0.3),
+    0 0 28px rgba(68, 255, 244, 0.14);
+}
+
+.gesture-chip[data-demo="double-fist"].active {
+  border-color: rgba(68, 255, 244, 0.86);
+  background: rgba(68, 255, 244, 0.12);
+  box-shadow:
+    0 0 18px rgba(68, 255, 244, 0.32),
+    0 0 28px rgba(159, 76, 255, 0.18);
+}
+
+.gesture-chip[data-demo="double-pinch"].active {
+  border-color: rgba(195, 255, 235, 0.86);
+  background: rgba(195, 255, 235, 0.12);
+  box-shadow:
+    0 0 18px rgba(195, 255, 235, 0.32),
+    0 0 30px rgba(255, 65, 229, 0.18);
+}
+
+.gesture-chip[data-demo="double-victory"].active {
+  border-color: rgba(95, 205, 255, 0.86);
+  background: rgba(95, 205, 255, 0.12);
+  box-shadow:
+    0 0 18px rgba(95, 205, 255, 0.32),
+    0 0 30px rgba(185, 96, 255, 0.2);
+}
+
+.gesture-chip[data-demo="clap"].active {
+  border-color: rgba(255, 255, 232, 0.9);
+  background: rgba(255, 255, 232, 0.13);
+  box-shadow:
+    0 0 18px rgba(255, 255, 232, 0.36),
+    0 0 30px rgba(255, 91, 52, 0.22);
 }
 
 .control-dock {
@@ -414,8 +502,16 @@ h1 {
     right: 10px;
     left: 10px;
     bottom: 56px;
-    justify-content: center;
+    align-items: stretch;
     opacity: 0.72;
+  }
+
+  .gesture-group {
+    justify-content: center;
+  }
+
+  .gesture-group-label {
+    display: none;
   }
 
   .gesture-chip {

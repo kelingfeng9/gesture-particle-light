@@ -1,4 +1,4 @@
-import { classifyGesture, getGestureConfig, smoothGestureState } from "./gesture.js";
+import { classifyHandScene, getGestureConfig, smoothGestureState } from "./gesture.js";
 
 const MediaPipeHands = window.Hands;
 const MediaPipeCamera = window.Camera;
@@ -30,7 +30,16 @@ const GESTURE_LABELS = {
   sweep: "挥动",
   victory: "V形",
   three: "三指",
-  rock: "摇滚"
+  rock: "摇滚",
+  ok: "OK",
+  thumb: "点赞",
+  call: "电话",
+  "l-shape": "L形",
+  "double-open": "双掌",
+  "double-fist": "双拳",
+  "double-pinch": "双捏合",
+  "double-victory": "双V",
+  clap: "合掌"
 };
 
 const ASSET_BASE = import.meta.env.BASE_URL ?? "/";
@@ -140,6 +149,10 @@ class ParticleField {
       y: indexTip.y - center.y || 0
     });
     const maxRadius = Math.min(this.width, this.height) * (0.16 + this.state.spread * 0.42);
+    const pairCenters = (this.hand.hands ?? [])
+      .map((hand) => hand.center)
+      .filter(Boolean)
+      .map(toScreen);
 
     this.ctx.save();
     this.ctx.globalCompositeOperation = "lighter";
@@ -162,6 +175,28 @@ class ParticleField {
         const starMix = this.state.starfield * (1 - this.state.contraction * 0.62);
         targetX = mix(targetX, dustX, starMix * 0.72);
         targetY = mix(targetY, dustY, starMix * 0.72);
+      }
+
+      if (pairCenters.length >= 2 && this.state.dual > 0.05) {
+        const pairCenter = particle.band < 0.5 ? pairCenters[0] : pairCenters[1];
+        const localAngle = spiralAngle + (particle.band < 0.5 ? -0.7 : 0.7);
+        const localRadius = maxRadius * (0.08 + particle.radius * (0.18 + this.state.spread * 0.38));
+        const dualX = pairCenter.x + Math.cos(localAngle) * localRadius;
+        const dualY = pairCenter.y + Math.sin(localAngle) * localRadius * 0.72;
+        targetX = mix(targetX, dualX, this.state.dual * 0.72);
+        targetY = mix(targetY, dualY, this.state.dual * 0.72);
+      }
+
+      if (pairCenters.length >= 2 && this.state.bridge > 0.05) {
+        const left = pairCenters[0];
+        const right = pairCenters[1];
+        const progress = fract(particle.band * 2 + Math.sin(time + particle.phase) * 0.02);
+        const bridgeX = mix(left.x, right.x, progress);
+        const bridgeY = mix(left.y, right.y, progress);
+        const bridgeNormal = normalize({ x: right.y - left.y, y: left.x - right.x });
+        const pulse = Math.sin(progress * Math.PI * 6 + time * 5 + particle.phase) * maxRadius * 0.055;
+        targetX = mix(targetX, bridgeX + bridgeNormal.x * pulse, this.state.bridge * 0.86);
+        targetY = mix(targetY, bridgeY + bridgeNormal.y * pulse, this.state.bridge * 0.86);
       }
 
       if (this.hand.name === "pinch") {
@@ -233,14 +268,17 @@ class ParticleField {
       const sparkleBoost = particle.sparkle > 0.82 ? 0.18 + this.state.starfield * 0.18 : 0;
       const hue = this.state.hue + particle.hueShift + Math.sin(time + particle.phase) * 9;
       const alpha = 0.06 + this.hand.confidence * 0.22 + speedGlow + sparkleBoost;
-      const lineBoost = this.state.ribbons * 0.14 + this.state.rays * 0.18 + this.state.spikes * 0.22;
-      const lightness = 54 + speedGlow * 30 + particle.sparkle * 9 + this.state.rays * 10;
+      const ribbons = this.state.ribbons ?? 0;
+      const rays = this.state.rays ?? 0;
+      const spikes = this.state.spikes ?? 0;
+      const lineBoost = ribbons * 0.14 + rays * 0.18 + spikes * 0.22 + (this.state.bridge ?? 0) * 0.16 + (this.state.shockwave ?? 0) * 0.16;
+      const lightness = 54 + speedGlow * 30 + particle.sparkle * 9 + rays * 10;
 
-      if (this.state.tail > 0.12 || this.state.ribbons > 0.08 || this.state.rays > 0.08 || this.state.spikes > 0.08 || speedGlow > 0.1) {
+      if (this.state.tail > 0.12 || this.state.ribbons > 0.08 || this.state.rays > 0.08 || this.state.spikes > 0.08 || this.state.bridge > 0.08 || this.state.shockwave > 0.08 || speedGlow > 0.1) {
         this.ctx.strokeStyle = `hsla(${hue}, 98%, ${lightness}%, ${Math.min(alpha * (0.5 + lineBoost), 0.5)})`;
         this.ctx.lineWidth = Math.max(0.6, particle.size * 0.7);
         this.ctx.beginPath();
-        this.ctx.moveTo(particle.x - particle.vx * (2.5 + this.state.tail * 3.8 + this.state.spikes * 3), particle.y - particle.vy * (2.5 + this.state.tail * 3.8 + this.state.spikes * 3));
+        this.ctx.moveTo(particle.x - particle.vx * (2.5 + this.state.tail * 3.8 + spikes * 3), particle.y - particle.vy * (2.5 + this.state.tail * 3.8 + spikes * 3));
         this.ctx.lineTo(particle.x, particle.y);
         this.ctx.stroke();
       }
@@ -251,7 +289,7 @@ class ParticleField {
       this.ctx.fill();
     }
 
-    this.drawSpecialOverlays(center, beamVector, time, maxRadius);
+    this.drawSpecialOverlays(center, beamVector, time, maxRadius, pairCenters);
     this.drawCrescent(center, beamVector, time, maxRadius);
     this.drawCore(center, pinchPoint, time);
     this.drawHandTrace(this.hand);
@@ -311,7 +349,7 @@ class ParticleField {
     this.ctx.restore();
   }
 
-  drawSpecialOverlays(center, beamVector, time, maxRadius) {
+  drawSpecialOverlays(center, beamVector, time, maxRadius, pairCenters = []) {
     if (this.state.ribbons > 0.08) {
       this.drawRibbons(center, beamVector, time, maxRadius);
     }
@@ -320,6 +358,24 @@ class ParticleField {
     }
     if (this.state.spikes > 0.08) {
       this.drawSpikes(center, time, maxRadius);
+    }
+    if (this.state.rings > 0.08) {
+      this.drawRings(center, time, maxRadius);
+    }
+    if (this.state.pillar > 0.08) {
+      this.drawPillar(center, time, maxRadius);
+    }
+    if (this.state.signal > 0.08) {
+      this.drawSignal(center, time, maxRadius);
+    }
+    if (this.state.cornerBeam > 0.08) {
+      this.drawCornerBeam(center, beamVector, time, maxRadius);
+    }
+    if (this.state.bridge > 0.08 && pairCenters.length >= 2) {
+      this.drawBridge(pairCenters[0], pairCenters[1], time);
+    }
+    if (this.state.shockwave > 0.08) {
+      this.drawShockwave(center, time, maxRadius);
     }
   }
 
@@ -390,6 +446,113 @@ class ParticleField {
     this.ctx.restore();
   }
 
+  drawRings(center, time, maxRadius) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    for (let ring = 0; ring < 4; ring += 1) {
+      const radius = maxRadius * (0.18 + ring * 0.16 + Math.sin(time * 1.8 + ring) * 0.012);
+      this.ctx.strokeStyle = `hsla(${ring % 2 ? this.state.secondaryHue : this.state.hue}, 100%, ${62 + ring * 5}%, ${0.34 * this.state.rings / (ring + 1)})`;
+      this.ctx.lineWidth = 4 - ring * 0.6;
+      this.ctx.beginPath();
+      this.ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  drawPillar(center, time, maxRadius) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    const height = maxRadius * 1.25;
+    const gradient = this.ctx.createLinearGradient(center.x, center.y + height * 0.24, center.x, center.y - height);
+    gradient.addColorStop(0, `hsla(${this.state.hue}, 100%, 62%, 0)`);
+    gradient.addColorStop(0.35, `hsla(${this.state.hue}, 100%, 68%, ${0.26 * this.state.pillar})`);
+    gradient.addColorStop(1, `hsla(${this.state.secondaryHue}, 100%, 78%, 0)`);
+    this.ctx.strokeStyle = gradient;
+    this.ctx.lineWidth = 18 + Math.sin(time * 4) * 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(center.x, center.y + height * 0.2);
+    this.ctx.lineTo(center.x, center.y - height);
+    this.ctx.stroke();
+    this.ctx.strokeStyle = `hsla(${this.state.secondaryHue}, 100%, 72%, ${0.58 * this.state.pillar})`;
+    this.ctx.lineWidth = 2.2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(center.x - 12, center.y - height * 0.18);
+    this.ctx.lineTo(center.x + 12, center.y - height * 0.58);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  drawSignal(center, time, maxRadius) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    for (let wave = 0; wave < 5; wave += 1) {
+      const radius = maxRadius * (0.16 + wave * 0.14 + fract(time * 0.22 + wave * 0.17) * 0.08);
+      const alpha = (0.28 - wave * 0.035) * this.state.signal;
+      this.ctx.strokeStyle = `hsla(${wave % 2 ? this.state.secondaryHue : this.state.hue}, 100%, 62%, ${alpha})`;
+      this.ctx.lineWidth = 2.2;
+      this.ctx.beginPath();
+      this.ctx.arc(center.x, center.y, radius, -Math.PI * 0.82, Math.PI * 0.82);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  drawCornerBeam(center, beamVector, time, maxRadius) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    const normal = { x: -beamVector.y, y: beamVector.x };
+    const arm = maxRadius * 0.78;
+    this.ctx.strokeStyle = `hsla(${this.state.hue}, 100%, 64%, ${0.62 * this.state.cornerBeam})`;
+    this.ctx.lineWidth = 4;
+    this.ctx.beginPath();
+    this.ctx.moveTo(center.x - normal.x * arm * 0.12, center.y - normal.y * arm * 0.12);
+    this.ctx.lineTo(center.x + beamVector.x * arm, center.y + beamVector.y * arm);
+    this.ctx.lineTo(center.x + beamVector.x * arm + normal.x * arm * 0.72, center.y + beamVector.y * arm + normal.y * arm * 0.72);
+    this.ctx.stroke();
+    this.ctx.strokeStyle = `hsla(${this.state.secondaryHue}, 100%, 74%, ${0.24 * this.state.cornerBeam})`;
+    this.ctx.lineWidth = 14 + Math.sin(time * 3) * 2;
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  drawBridge(left, right, time) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    const gradient = this.ctx.createLinearGradient(left.x, left.y, right.x, right.y);
+    gradient.addColorStop(0, `hsla(${this.state.hue}, 100%, 66%, 0.08)`);
+    gradient.addColorStop(0.5, `hsla(${this.state.secondaryHue}, 100%, 78%, ${0.66 * this.state.bridge})`);
+    gradient.addColorStop(1, `hsla(${this.state.hue}, 100%, 66%, 0.08)`);
+    this.ctx.strokeStyle = gradient;
+    this.ctx.lineWidth = 6 + Math.sin(time * 5) * 1.6;
+    this.ctx.beginPath();
+    this.ctx.moveTo(left.x, left.y);
+    for (let i = 1; i <= 18; i += 1) {
+      const t = i / 18;
+      const x = mix(left.x, right.x, t);
+      const y = mix(left.y, right.y, t) + Math.sin(t * Math.PI * 4 + time * 4) * 10;
+      this.ctx.lineTo(x, y);
+    }
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  drawShockwave(center, time, maxRadius) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = "lighter";
+    for (let wave = 0; wave < 3; wave += 1) {
+      const phase = fract(time * 0.34 + wave / 3);
+      const radius = maxRadius * (0.12 + phase * 0.92);
+      const alpha = (1 - phase) * 0.38 * this.state.shockwave;
+      this.ctx.strokeStyle = `hsla(${wave % 2 ? this.state.secondaryHue : this.state.hue}, 100%, 72%, ${alpha})`;
+      this.ctx.lineWidth = 6 - phase * 3;
+      this.ctx.beginPath();
+      this.ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
   drawCore(center, pinchPoint, time) {
     const pulse = 1 + Math.sin(time * (3.2 + this.state.vortex)) * 0.08;
     const coreRadius = 8 + this.state.coreIntensity * 44 + this.state.contraction * 22;
@@ -415,27 +578,31 @@ class ParticleField {
   }
 
   drawHandTrace(gesture) {
-    if (!gesture.landmarks) return;
+    const hands = gesture.hands?.length ? gesture.hands : [gesture];
+    const drawableHands = hands.filter((hand) => hand.landmarks);
+    if (!drawableHands.length) return;
 
     this.ctx.save();
     this.ctx.lineWidth = 1.2;
     this.ctx.strokeStyle = "rgba(255, 47, 210, 0.24)";
     this.ctx.fillStyle = "rgba(215, 255, 72, 0.56)";
 
-    for (const [from, to] of HAND_CONNECTIONS) {
-      const a = toScreen(gesture.landmarks[from]);
-      const b = toScreen(gesture.landmarks[to]);
-      this.ctx.beginPath();
-      this.ctx.moveTo(a.x, a.y);
-      this.ctx.lineTo(b.x, b.y);
-      this.ctx.stroke();
-    }
+    for (const hand of drawableHands) {
+      for (const [from, to] of HAND_CONNECTIONS) {
+        const a = toScreen(hand.landmarks[from]);
+        const b = toScreen(hand.landmarks[to]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(a.x, a.y);
+        this.ctx.lineTo(b.x, b.y);
+        this.ctx.stroke();
+      }
 
-    for (const mark of gesture.landmarks) {
-      const p = toScreen(mark);
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
-      this.ctx.fill();
+      for (const mark of hand.landmarks) {
+        const p = toScreen(mark);
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
     }
     this.ctx.restore();
   }
@@ -491,7 +658,7 @@ async function startCamera() {
     });
 
     hands.setOptions({
-      maxNumHands: 1,
+      maxNumHands: 2,
       modelComplexity: 1,
       minDetectionConfidence: 0.68,
       minTrackingConfidence: 0.62
@@ -511,7 +678,7 @@ async function startCamera() {
     tracking.live = true;
     signalDot.classList.add("is-live");
     statusText.textContent = "摄像头识别中";
-    dockNote.textContent = "单手张开、握拳、捏合、指向、V形、三指、摇滚，或快速左右挥动。";
+    dockNote.textContent = "支持单手 12 种和双手 5 种玩法，双手同时入镜会触发组合光效。";
     startButton.textContent = "识别已启动";
   } catch (error) {
     startButton.disabled = false;
@@ -532,16 +699,14 @@ function onHandResults(results) {
     return;
   }
 
-  const landmarks = results.multiHandLandmarks[0];
-  const classified = classifyGesture(landmarks);
-  classified.landmarks = landmarks;
+  const classified = classifyHandScene(results.multiHandLandmarks);
 
   const now = performance.now();
   const center = classified.center;
   if (tracking.lastCenter) {
     const dt = Math.max((now - tracking.lastTime) / 1000, 0.016);
     const velocityX = (center.x - tracking.lastCenter.x) / dt;
-    if (Math.abs(velocityX) > 0.8 && classified.name === "open") {
+    if (Math.abs(velocityX) > 0.8 && classified.name === "open" && !classified.hands?.length) {
       tracking.sweepUntil = now + 520;
       tracking.sweepDirection = velocityX > 0 ? -1 : 1;
     }
@@ -579,9 +744,13 @@ function applyGesture(gesture) {
 function createDemoGesture(name, point) {
   const config = getGestureConfig(name);
   const center = { x: point.x, y: point.y };
-  const indexTip = name === "point" || name === "sweep" || name === "victory" || name === "three" || name === "rock"
+  const isDirectional = ["point", "sweep", "victory", "three", "rock", "call", "l-shape"].includes(name);
+  const indexTip = isDirectional
     ? { x: clamp(point.x + 0.2, 0.02, 0.98), y: clamp(point.y - 0.04, 0.02, 0.98) }
     : { x: clamp(point.x + 0.08, 0.02, 0.98), y: clamp(point.y - 0.1, 0.02, 0.98) };
+  const isPair = name.startsWith("double-") || name === "clap";
+  const leftCenter = { x: clamp(point.x - 0.16, 0.04, 0.96), y: point.y };
+  const rightCenter = { x: clamp(point.x + 0.16, 0.04, 0.96), y: point.y };
 
   return {
     name,
@@ -590,6 +759,12 @@ function createDemoGesture(name, point) {
     center,
     indexTip,
     pinchPoint: { x: point.x, y: point.y },
+    hands: isPair
+      ? [
+          { center: leftCenter, indexTip: { x: leftCenter.x + 0.08, y: leftCenter.y - 0.1 }, pinchPoint: leftCenter },
+          { center: rightCenter, indexTip: { x: rightCenter.x + 0.08, y: rightCenter.y - 0.1 }, pinchPoint: rightCenter }
+        ]
+      : [],
     config
   };
 }
@@ -604,26 +779,28 @@ function drawVideoOverlay(results) {
   context.setTransform(dpr, 0, 0, dpr, 0, 0);
   context.clearRect(0, 0, width, height);
 
-  const landmarks = results.multiHandLandmarks?.[0];
-  if (!landmarks) return;
+  const hands = results.multiHandLandmarks ?? [];
+  if (!hands.length) return;
 
   context.strokeStyle = "rgba(255, 47, 210, 0.72)";
   context.lineWidth = 2;
   context.fillStyle = "rgba(215, 255, 72, 0.9)";
 
-  for (const [from, to] of HAND_CONNECTIONS) {
-    const a = landmarks[from];
-    const b = landmarks[to];
-    context.beginPath();
-    context.moveTo((1 - a.x) * width, a.y * height);
-    context.lineTo((1 - b.x) * width, b.y * height);
-    context.stroke();
-  }
+  for (const landmarks of hands) {
+    for (const [from, to] of HAND_CONNECTIONS) {
+      const a = landmarks[from];
+      const b = landmarks[to];
+      context.beginPath();
+      context.moveTo((1 - a.x) * width, a.y * height);
+      context.lineTo((1 - b.x) * width, b.y * height);
+      context.stroke();
+    }
 
-  for (const mark of landmarks) {
-    context.beginPath();
-    context.arc((1 - mark.x) * width, mark.y * height, 2.8, 0, Math.PI * 2);
-    context.fill();
+    for (const mark of landmarks) {
+      context.beginPath();
+      context.arc((1 - mark.x) * width, mark.y * height, 2.8, 0, Math.PI * 2);
+      context.fill();
+    }
   }
 }
 

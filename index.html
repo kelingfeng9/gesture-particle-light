@@ -6,7 +6,7 @@
     <title>Gesture Particle Light Field</title>
     <meta
       name="description"
-      content="A camera-driven gesture particle light field that reacts to eight single-hand gestures with distinct particle colors and forms."
+      content="A camera-driven gesture particle light field that reacts to single-hand and two-hand gestures with distinct particle colors and forms."
     />
     <link
       rel="icon"
@@ -41,38 +41,80 @@
       </section>
 
       <aside class="gesture-strip" aria-label="手势映射">
-        <button class="gesture-chip active" data-demo="open" type="button">
-          <span>张开</span>
-          <small>外扩</small>
-        </button>
-        <button class="gesture-chip" data-demo="fist" type="button">
-          <span>握拳</span>
-          <small>收缩</small>
-        </button>
-        <button class="gesture-chip" data-demo="pinch" type="button">
-          <span>捏合</span>
-          <small>光核</small>
-        </button>
-        <button class="gesture-chip" data-demo="point" type="button">
-          <span>指向</span>
-          <small>光束</small>
-        </button>
-        <button class="gesture-chip" data-demo="sweep" type="button">
-          <span>挥动</span>
-          <small>潮汐</small>
-        </button>
-        <button class="gesture-chip" data-demo="victory" type="button">
-          <span>V形</span>
-          <small>双螺旋</small>
-        </button>
-        <button class="gesture-chip" data-demo="three" type="button">
-          <span>三指</span>
-          <small>放射</small>
-        </button>
-        <button class="gesture-chip" data-demo="rock" type="button">
-          <span>摇滚</span>
-          <small>闪电</small>
-        </button>
+        <div class="gesture-group">
+          <span class="gesture-group-label">单手</span>
+          <button class="gesture-chip active" data-demo="open" type="button">
+            <span>张开</span>
+            <small>外扩</small>
+          </button>
+          <button class="gesture-chip" data-demo="fist" type="button">
+            <span>握拳</span>
+            <small>收缩</small>
+          </button>
+          <button class="gesture-chip" data-demo="pinch" type="button">
+            <span>捏合</span>
+            <small>光核</small>
+          </button>
+          <button class="gesture-chip" data-demo="point" type="button">
+            <span>指向</span>
+            <small>光束</small>
+          </button>
+          <button class="gesture-chip" data-demo="sweep" type="button">
+            <span>挥动</span>
+            <small>潮汐</small>
+          </button>
+          <button class="gesture-chip" data-demo="victory" type="button">
+            <span>V形</span>
+            <small>双螺旋</small>
+          </button>
+          <button class="gesture-chip" data-demo="three" type="button">
+            <span>三指</span>
+            <small>放射</small>
+          </button>
+          <button class="gesture-chip" data-demo="rock" type="button">
+            <span>摇滚</span>
+            <small>闪电</small>
+          </button>
+          <button class="gesture-chip" data-demo="ok" type="button">
+            <span>OK</span>
+            <small>光环</small>
+          </button>
+          <button class="gesture-chip" data-demo="thumb" type="button">
+            <span>点赞</span>
+            <small>光柱</small>
+          </button>
+          <button class="gesture-chip" data-demo="call" type="button">
+            <span>电话</span>
+            <small>信号</small>
+          </button>
+          <button class="gesture-chip" data-demo="l-shape" type="button">
+            <span>L形</span>
+            <small>直角</small>
+          </button>
+        </div>
+        <div class="gesture-group gesture-group-dual">
+          <span class="gesture-group-label">双手</span>
+          <button class="gesture-chip" data-demo="double-open" type="button">
+            <span>双掌</span>
+            <small>星云</small>
+          </button>
+          <button class="gesture-chip" data-demo="double-fist" type="button">
+            <span>双拳</span>
+            <small>压缩</small>
+          </button>
+          <button class="gesture-chip" data-demo="double-pinch" type="button">
+            <span>双捏合</span>
+            <small>能量球</small>
+          </button>
+          <button class="gesture-chip" data-demo="double-victory" type="button">
+            <span>双V</span>
+            <small>镜像</small>
+          </button>
+          <button class="gesture-chip" data-demo="clap" type="button">
+            <span>合掌</span>
+            <small>冲击</small>
+          </button>
+        </div>
       </aside>
 
       <section class="control-dock" aria-label="控制区">
@@ -82,7 +124,7 @@
         <button id="toggle-video" class="ghost-action" type="button" aria-pressed="false">
           显示画面
         </button>
-        <span class="dock-note" id="dock-note">允许浏览器摄像头权限后，手放进画面中央。</span>
+        <span class="dock-note" id="dock-note">允许浏览器摄像头权限后，单手或双手放进画面中央。</span>
       </section>
 
       <div class="video-monitor" id="video-monitor" aria-hidden="true">
